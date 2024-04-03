@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фигуры Лиссажу</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #202124;
+            color: #fff;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .form-container {
+            width: 30%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        form {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        form label {
+            display: block;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        form input {
+            width: calc(100% - 10px);
+            padding: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background-color: #444;
+            color: #fff;
+        }
+        button {
+            width: calc(100% - 20px);
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.5s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #plots-container {
+            width: 70%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #plots {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Ввод параметров -->
+    <div class="form-container">
+        <h1>Параметры</h1>
+        <form id="paramsForm">
+            <label for="frequencyX">Частота X (Гц):</label>
+            <input type="number" step="0.01" min="0" id="frequencyX" value="1.0">
+            <br>
+            <label for="frequencyY">Частота Y (Гц):</label>
+            <input type="number" step="0.01" min="0" id="frequencyY" value="1.0">
+            <br>
+            <label for="amplitude">Амплитуда:</label>
+            <input type="number" step="0.01" min="0" id="amplitude" value="1.0">
+            <br>
+            <button onclick="updatePlots()">Обновить (Enter)</button>
+        </form>
+        <br>
+        <label for="timeRange">Время:</label>
+        <input type="range" min="1" max="1000" value="100" step="1" id="timeRange" onchange="updateTimeRange(this.value)">
+        <output for="timeRange" id="timeRangeValue">100</output>
+    </div>
+
+    <!-- Графики -->
+    <div id="plots-container">
+        <div id="plots"></div>
+    </div>
+</div>
+
+<script>
+    // Обновление времени
+    function updateTimeRange(value) {
+        document.getElementById("timeRangeValue").value = value;
+        generateLissajous(parseFloat(document.getElementById("frequencyX").value),
+                          parseFloat(document.getElementById("frequencyY").value),
+                          parseFloat(document.getElementById("amplitude").value),
+                          parseFloat(value));
+    }
+    
+    function updatePlots(event) {
+        if (event) event.preventDefault();
+        
+        const frequencyX = parseFloat(document.getElementById("frequencyX").value);
+        const frequencyY = parseFloat(document.getElementById("frequencyY").value);
+        const amplitude = parseFloat(document.getElementById("amplitude").value);
+        const timeRange = parseFloat(document.getElementById("timeRange").value);
+        
+        generateLissajous(frequencyX, frequencyY, amplitude, timeRange);
+    }
+    
+    function generateLissajous(frequencyX, frequencyY, amplitude, timeMax) {
+        const time = Array.from({length: timeMax * 1000}, (_, i) => i / 1000);
+        
+        // X и Y для каждого момента времени
+        const xValues = time.map(t => amplitude * Math.sin(2 * Math.PI * frequencyX * t));
+        const yValues = time.map(t => amplitude * Math.sin(2 * Math.PI * frequencyY * t));
+        
+        // График
+        const lissajousPlot = {
+            x: xValues,
+            y: yValues,
+            mode: 'lines',
+            name: 'Фигура Лиссажу',
+            line: {color: '#fff'}
+        };
+
+        const layout = {
+            title: {
+                text: 'Визуализация фигур Лиссажу',
+                font: {
+                    color: '#fff'
+                }
+            },
+            xaxis: {
+                title: 'X',
+                color: '#fff',
+                range: [-amplitude, amplitude]
+            },
+            yaxis: {
+                title: 'Y',
+                color: '#fff',
+                range: [-amplitude, amplitude]
+            },
+            plot_bgcolor: '#333',
+            paper_bgcolor: '#333',
+            aspectratio: {x: 1, y: 1}
+        };
+        
+        Plotly.newPlot('plots', [lissajousPlot], layout);
+    }
+    
+    document.getElementById("paramsForm").addEventListener("submit", updatePlots);
+    
+    generateLissajous(1.0, 1.0, 1.0, 100);
+</script>
+
+</body>
+</html>
